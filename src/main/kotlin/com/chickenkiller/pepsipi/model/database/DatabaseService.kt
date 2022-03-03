@@ -9,14 +9,18 @@ import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 
 object DatabaseService {
-    val db by lazy {
+    /*val db by lazy {
         Database.connect(
             "jdbc:postgresql://localhost:5432/nfst", driver = "org.postgresql.Driver",
             user = "nfst", password = "nfst"
         )
-    }
+    }*/
 
     fun initDB() {
+        Database.connect(
+            "jdbc:postgresql://localhost:5432/nfst", driver = "org.postgresql.Driver", user = "nfst", password = "nfst"
+        )
+
         transaction {
             SchemaUtils.createMissingTablesAndColumns(LeashChainTable, TransactionsTable)
         }
