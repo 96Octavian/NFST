@@ -1,12 +1,12 @@
 package com.chickenkiller.pepsipi.model
 
-import java.time.LocalDateTime
+import kotlinx.serialization.*
 
+@Serializable
 data class Block(
-    val Index: Int,
-    val timestamp: LocalDateTime,
+//    val index: Int = 0,
+    val timestamp: String,
     val previousHash: String,
     val hash: String,
-    val transactions: List<Transaction>
-) {
-}
+    val transactions: List<Transaction> = emptyList()
+)

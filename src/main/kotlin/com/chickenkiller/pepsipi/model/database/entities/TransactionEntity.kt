@@ -14,5 +14,5 @@ class TransactionEntity(id: EntityID<Int>) : Entity<Int>(id) {
     var amount by TransactionsTable.amount
     var containerBlock by BlockEntity referencedOn TransactionsTable.containerBlock
 
-    val transaction: Transaction = Transaction(sender.toString(), recipient.toString(), amount)
+    val transaction: Transaction = Transaction(sender, recipient, amount)
 }

@@ -26,9 +26,8 @@ object DatabaseService {
         }
     }
 
-    private suspend fun <T> dbQuery(block: () -> T): T {
-        return withContext(Dispatchers.IO) {
+    suspend fun <T> dbQuery(block: () -> T): T =
+        withContext(Dispatchers.IO) {
             transaction { block() }
         }
-    }
 }
