@@ -6,5 +6,5 @@ object TransactionsTable : IntIdTable("Transactions") {
     val sender = text("Sender")
     val recipient = text("Recipient")
     val amount = float("Amount")
-    val containerBlock = reference("ContainerBlock", LeashChainTable)
+    val containerBlock = reference("ContainerBlock", LeashChainTable).nullable()
 }

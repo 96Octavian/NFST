@@ -3,12 +3,12 @@ package com.chickenkiller.pepsipi.routes
 import com.chickenkiller.pepsipi.model.Block
 import com.chickenkiller.pepsipi.model.database.DatabaseService.dbQuery
 import com.chickenkiller.pepsipi.model.database.entities.BlockEntity
+import com.chickenkiller.pepsipi.model.database.entities.TransactionEntity
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import java.time.Instant
 
 fun Application.blocksRoutes() {
     routing {
@@ -22,17 +22,12 @@ private suspend fun getBlocks(offset: Long = 0, limit: Int = 10): List<Block> = 
 
 private suspend fun addBlock(block: Block): Block {
     return dbQuery {
-        BlockEntity.new {
-            //index = block.index
-            timestamp = Instant.parse(block.timestamp)
-            previousHash = block.previousHash
-            hash = block.hash
-        }.also { be ->
-            block.transactions.forEach {
-                it.toEntity(be)
-            }
-        }
-    }.toBlock()
+        BlockEntity.fromBlock(block).also { be ->
+                block.transactions.forEach {
+                    TransactionEntity.fromTransaction(it, be)
+                }
+            }.toBlock()
+    }
 }
 
 fun Route.blocks() {
@@ -49,6 +44,5 @@ fun Route.blocks() {
         val block = call.receive<Block>()
         if (block.transactions.isEmpty()) call.respond(HttpStatusCode.BadRequest)
         else call.respond(addBlock(block))
-        //call.respond(block)
     }
 }
