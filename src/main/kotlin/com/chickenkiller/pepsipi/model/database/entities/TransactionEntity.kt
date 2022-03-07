@@ -8,7 +8,7 @@ import org.jetbrains.exposed.dao.id.EntityID
 
 class TransactionEntity(id: EntityID<Int>) : Entity<Int>(id) {
     companion object : EntityClass<Int, TransactionEntity>(TransactionsTable) {
-        fun fromTransaction(transaction: Transaction, blockEntity: BlockEntity?): TransactionEntity =
+        fun fromTransaction(transaction: Transaction, blockEntity: BlockEntity? = null): TransactionEntity =
             TransactionEntity.new {
                 sender = transaction.sender
                 recipient = transaction.recipient

@@ -10,39 +10,40 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-fun Application.blocksRoutes() {
-    routing {
-        blocks()
-    }
+private suspend fun getBlocks(offset: Long? = 0, limit: Int? = 10): List<Block> = dbQuery {
+    BlockEntity.all().limit(limit ?: 10, offset ?: 0).map { it.toBlock() }
 }
 
-private suspend fun getBlocks(offset: Long = 0, limit: Int = 10): List<Block> = dbQuery {
-    BlockEntity.all().limit(limit, offset).map { it.toBlock() }
-}
-
-private suspend fun addBlock(block: Block): Block {
-    return dbQuery {
-        BlockEntity.fromBlock(block).also { be ->
-                block.transactions.forEach {
-                    TransactionEntity.fromTransaction(it, be)
-                }
-            }.toBlock()
-    }
-}
-
-fun Route.blocks() {
-    get("/blocks") {
-        call.request.queryParameters["offset"]?.toLong()?.let { offset ->
-            call.request.queryParameters["limit"]?.toInt()?.let { limit -> getBlocks(offset, limit) }
-        }?.let { response ->
-            call.respond(
-                response
-            )
+// TODO: Check block has at least one transaction
+// TODO: Check each transaction exists and is not already mined
+// TODO: Verify block
+private suspend fun addBlock(block: Block): Block = dbQuery {
+    BlockEntity.fromBlock(block).also { be ->
+        block.transactions.forEach {
+            TransactionEntity.fromTransaction(it, be)
         }
+    }.toBlock()
+}
+
+private suspend fun getBlock(id: Int): Block? = dbQuery {
+    BlockEntity.findById(id)?.toBlock()
+}
+
+fun Route.blocksRoutes() {
+    get("/blocks") {
+        val offset = call.request.queryParameters["offset"]?.toLong()
+        val limit = call.request.queryParameters["limit"]?.toInt()
+
+        call.respond(getBlocks(offset, limit))
     }
+    get("/blocks/{id}") {
+        val id = call.parameters["id"]?.toInt() ?: -1
+        call.respond(getBlock(id) ?: HttpStatusCode.NoContent)
+    }
+
     post("/blocks") {
         val block = call.receive<Block>()
-        if (block.transactions.isEmpty()) call.respond(HttpStatusCode.BadRequest)
+        if (block.transactions.isEmpty()) call.respond(HttpStatusCode.BadRequest) // TODO: Move this check inside addBlock()
         else call.respond(addBlock(block))
     }
 }
